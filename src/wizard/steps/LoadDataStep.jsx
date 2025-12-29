@@ -1,7 +1,7 @@
-function LoadDataStep({ status, data, error, onBack }) {
+function LoadDataStep({ status, data, error, onBack, onNext }) {
   return (
     <>
-      <h2>Schritt 2: Daten laden</h2>
+      <h2>Daten laden</h2>
 
       {status === "loading" && <p>Lade Daten…</p>}
       {status === "error" && <p>{error}</p>}
@@ -10,6 +10,10 @@ function LoadDataStep({ status, data, error, onBack }) {
       )}
 
       <button onClick={onBack}>Zurück</button>
+
+      {status === "success" && (
+        <button onClick={() => onNext()}>Weiter</button>
+      )}
     </>
   );
 }
