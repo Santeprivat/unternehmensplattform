@@ -1,0 +1,8 @@
+- id: MDR_HINT
+  kind: HINT
+  name: Medizinprodukte-Regulierung (MDR)
+  description: >
+    Software kann als Medizinprodukt gelten.
+    Eine Prüfung nach MDR/IVDR ist erforderlich.
+  severity: ACTION_REQUIRED
+  when_stage: AFTER_FOUNDATION

@@ -1,0 +1,12 @@
+- id: MDR_SOFTWARE
+  requirement_id: MDR_HINT
+  wz_scope: "62"
+  conditions:
+    tagsAny:
+      - medical
+      - medical_device
+    keywordsAny:
+      - medizinprodukt
+      - mdr
+  explain: >
+    Die Tätigkeit deutet auf Software im medizinischen Kontext hin.

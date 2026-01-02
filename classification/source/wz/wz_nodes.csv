@@ -1,0 +1,4 @@
+code,level,title,parent_code
+"62",2,Erbringung von Dienstleistungen der Informationstechnologie,""
+"62.01",3,Programmierungstätigkeiten,"62"
+"62.01.0",4,Entwicklung von Software,"62.01"
