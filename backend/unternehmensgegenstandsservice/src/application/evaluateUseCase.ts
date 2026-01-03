@@ -7,28 +7,29 @@ import {
   Clarification,
   ApprovalRequirement,
   CompanyNameAssessment,
-  Proposal
+  Proposal,
 } from "../domain/model/domainTypes";
 
-// Regel-Module (MVP-Stubs – werden schrittweise gefüllt)
 import { interpretIntent } from "../domain/intent/intentInterpreter";
-import { determineClarifications } from "../domain/rules/clarificationRules";
-import { deriveApprovals } from "../domain/rules/approvalRules";
 import { assessCompanyName } from "../domain/rules/nameRules";
 import { buildProposal } from "../domain/proposal/proposalBuilder";
+import { classifyActivities } from "../infrastructure/classification/wzClassificationAdapter";
+import {
+  mapPermits,
+  mapClarifications,
+} from "./mapping/classificationMapping";
 
 /**
  * Zentrale fachliche Orchestrierung der Bewertung.
  *
- * Diese Funktion ist zustandslos und deterministisch.
- * Sie wertet einen Request vollständig aus und liefert
- * ein fachliches Ergebnis zurück.
+ * Zustandslos, deterministisch.
+ * Aggregiert Tätigkeiten WZ-basiert und leitet daraus
+ * Genehmigungen und Klärungsbedarfe ab.
  */
 export function evaluateUseCase(
   request: EvaluateRequest
 ): EvaluateResponse {
-    
-  // --- 1. Grundlegende Initialisierung ------------------------------
+  // --- 1. Initialisierung ------------------------------------------
 
   const activitySuggestions: ActivitySuggestion[] = [];
   const clarifications: Clarification[] = [];
@@ -45,26 +46,30 @@ export function evaluateUseCase(
     activitySuggestions.push(...interpretedActivities);
   }
 
-  // --- 3. Klärungsbedarfe ermitteln --------------------------------
+  // --- 3. WZ-Klassifikation + Aggregation ---------------------------
 
-  const detectedClarifications = determineClarifications(
-    activitySuggestions,
-    request.resolvedFacts ?? []
+  const aggregatedClassification = classifyActivities(
+    activitySuggestions.map((a) => ({
+      // ⚠️ ggf. Feldnamen an ActivitySuggestion anpassen
+      text: (a as any).text ?? (a as any).label,
+      tags: (a as any).tags ?? [],
+      wzCode: (a as any).wzCode,
+    }))
   );
 
-  clarifications.push(...detectedClarifications);
+  // --- 4. Klärungsbedarfe aus Aggregation ---------------------------
 
-  // --- 4. Genehmigungen ableiten -----------------------------------
-
-  const derivedApprovals = deriveApprovals(
-    activitySuggestions,
-    request.context,
-    request.resolvedFacts ?? []
+  clarifications.push(
+    ...mapClarifications(aggregatedClassification)
   );
 
-  approvalRequirements.push(...derivedApprovals);
+  // --- 5. Genehmigungen aus Aggregation -----------------------------
 
-  // --- 5. Unternehmensname bewerten --------------------------------
+  approvalRequirements.push(
+    ...mapPermits(aggregatedClassification)
+  );
+
+  // --- 6. Unternehmensname bewerten --------------------------------
 
   let companyNameAssessment: CompanyNameAssessment | undefined;
 
@@ -75,10 +80,10 @@ export function evaluateUseCase(
     );
   }
 
-  // --- 6. Prüfen: ist der Vorgang fachlich abschließbar? ------------
+  // --- 7. Prüfen: ist der Vorgang fachlich abschließbar? ------------
 
   const hasBlockingClarifications = clarifications.some(
-    c => c.severity === "BLOCKING"
+    (c) => c.severity === "BLOCKING"
   );
 
   if (hasBlockingClarifications) {
@@ -87,11 +92,11 @@ export function evaluateUseCase(
       clarifications,
       approvalRequirements,
       companyNameAssessment,
-      overallResult: "INCOMPLETE"
+      overallResult: "INCOMPLETE",
     };
   }
 
-  // --- 7. Proposal bauen -------------------------------------------
+  // --- 8. Proposal bauen -------------------------------------------
 
   const proposal: Proposal | undefined = buildProposal(
     activitySuggestions,
@@ -105,11 +110,11 @@ export function evaluateUseCase(
       clarifications,
       approvalRequirements,
       companyNameAssessment,
-      overallResult: "NOT_ALLOWED"
+      overallResult: "NOT_ALLOWED",
     };
   }
 
-  // --- 8. Erfolgreicher Abschluss ----------------------------------
+  // --- 9. Erfolgreicher Abschluss ----------------------------------
 
   return {
     activitySuggestions,
@@ -117,6 +122,6 @@ export function evaluateUseCase(
     approvalRequirements,
     companyNameAssessment,
     proposal,
-    overallResult: "ALLOWED"
+    overallResult: "ALLOWED",
   };
 }

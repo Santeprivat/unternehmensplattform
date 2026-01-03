@@ -2,6 +2,7 @@
 
 import { evaluateUseCase } from "../src/application/evaluateUseCase";
 import { EvaluateRequest } from "../src/domain/model/domainTypes";
+import "dotenv/config";
 
 function log(title: string, value: unknown) {
   console.log("\n=== " + title + " ===");

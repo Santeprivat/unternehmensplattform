@@ -129,6 +129,15 @@ Der Unternehmensgegenstandsservice schafft eine **fachlich saubere, erklärbare 
 
 ---
 
+### WZ-Klassifikation
+
+Der Unternehmensgegenstandsservice benötigt Zugriff auf die
+WZ-Klassifikationsdatenbank.
+
+Setze dazu die Environment-Variable:
+
+WZ_DB_PATH=.../classification/dist/wz.db
+
 ## Status
 
 - Domänenmodell definiert

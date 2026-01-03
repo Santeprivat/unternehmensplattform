@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 import path from "path";
 
 export default defineConfig({
-  root: __dirname, // 🔥 DAS ist der entscheidende Fix
+  root: __dirname,
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"]
